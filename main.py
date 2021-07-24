@@ -10,7 +10,7 @@ true_api_key = environ['API_KEY']
 converted_skins = []
 
 @app.get('/')
-def return_profile_image(skin_url: str = Query(None, max_length=102), api_key: str = Query(None, max_length=20)):
+async def return_profile_image(skin_url: str = Query(None, max_length=102), api_key: str = Query(None, max_length=20)):
     global converted_skins
     try:
         skin_id = ''.join(list(skin_url.split('http://textures.minecraft.net/texture/')[1])[0:6])
