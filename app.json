@@ -1,0 +1,7 @@
+{
+  "name": "Skindentity",
+  "description": "Python FastAPI with a collection of Minecraft Skin rendering APIs.",
+  "repository": "https://github.com/Sorrowfall/Skindentity",
+  "logo": "https://raw.githubusercontent.com/Sorrowfall/Skindentity/master/icon.png",
+  "keywords": ["minecraft", "fastapi"]
+}

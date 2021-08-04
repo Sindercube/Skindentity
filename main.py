@@ -1,39 +1,114 @@
-from fastapi import FastAPI, Query
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, Query, HTTPException, Depends
+from fastapi.responses import StreamingResponse
+from PIL import Image, UnidentifiedImageError
+from urllib.request import Request, urlopen
+from os import getenv
 from io import BytesIO
-from PIL import Image, ImageOps, UnidentifiedImageError
-from urllib.request import urlopen
-from os import environ, listdir
+from deta import Deta
+from json import loads
+from json.decoder import JSONDecodeError
+from base64 import b64decode
+
+import renders
+
+class ImageSizeError(Exception):
+    pass
+class UrlError(Exception):
+    pass
+class ArgumentError(Exception):
+    pass
+class UnknownPlayerError(Exception):
+    pass
 
 app = FastAPI()
-true_api_key = environ['API_KEY']
-converted_skins = []
+deta = Deta(getenv('DETA_PROJECT_KEY'))
 
-@app.get('/')
-async def return_profile_image(skin_url: str = Query(None, max_length=102), api_key: str = Query(None, max_length=20)):
-    global converted_skins
+def skin_from_player(player):
     try:
-        skin_id = ''.join(list(skin_url.split('http://textures.minecraft.net/texture/')[1])[0:6])
-    except IndexError:
-        return "Skin image must be provided by https://textures.minecraft.net"
-    if skin_id in converted_skins:
-        return FileResponse("skins/"+skin_id+".png")
-    if api_key != true_api_key:
-        return "Invalid API key"
+        id_json = loads(urlopen('https://api.mojang.com/users/profiles/minecraft/' + player).read())
+    except JSONDecodeError:
+        raise UnknownPlayerError
+    if not id_json:
+        raise UnknownPlayerError
+    data_json = loads(urlopen('https://sessionserver.mojang.com/session/minecraft/profile/' + id_json['id']).read())
+    data = data_json['properties'][0]['value']
+    decoded_json = loads(b64decode(data).decode('utf-8'))
+
+    link = decoded_json['textures']['SKIN']['url']
     try:
-        skin_image = Image.open(urlopen(skin_url)).convert('RGBA')
+        slim = decoded_json['textures']['SKIN']['metadata']['model'] == 'slim'
+    except KeyError:
+        slim = False
+    return link, slim
+
+def skin_from_url(url):
+    try:
+        req = Request(url=url, headers={'User-Agent':' Mozilla/5.0 (Windows NT 6.1; WOW64; rv:12.0) Gecko/20100101 Firefox/12.0'})
+        file = urlopen(req)
     except ValueError:
-        return "Unknown URL type: {}".format(skin_url)
+        raise UrlError
+    try:
+        image = Image.open(file).convert('RGBA')
     except UnidentifiedImageError:
-        return "URL doesn't point to an image"
-    head_image = skin_image.crop((8, 8, 16, 16))
-    final_image = Image.new('RGBA', (12, 12))
-    final_image.paste(head_image, (2, 2))
-    # resize the overlay image manually because Image.alpha_composite requires that
-    temp_overlay_image = skin_image.crop((40, 8, 48, 16))
-    overlay_image = Image.new('RGBA', (12, 12))
-    overlay_image.paste(temp_overlay_image, (2, 2))
-    final_image = Image.alpha_composite(final_image, overlay_image)
-    final_image.resize((360, 360), Image.NEAREST).save("skins/"+skin_id+".png", 'PNG')
-    converted_skins.append(skin_id)
-    return FileResponse("skins/"+skin_id+".png")
+        raise UrlError
+    if image.size == (64, 32):
+        image = renders.old_to_new_skin(image)
+    if image.size != (64, 64):
+        raise ImageSizeError
+    return image
+
+def api_template(args, render_function, drive):
+    player, url, slim = args
+    
+    if not player and not url:
+        return HTTPException(status_code=404, detail="You must specify a player or a skin URL")
+    if player:
+        try:
+            url, slim = skin_from_player(player)
+        except UnknownPlayerError:
+            return HTTPException(status_code=404, detail="Unknown player")
+    print(slim)
+    filename = url.split('/')[-1]
+    if not filename.endswith('.png'):
+        filename = filename.rsplit('.')[0]+'.png'
+    # get potential image
+
+    pot_image = drive.get(filename)
+    if pot_image:
+        image = Image.open(pot_image)
+        byte_result = BytesIO()
+        image.save(byte_result, format='PNG')
+        byte_result.seek(0)
+
+        return StreamingResponse(byte_result, media_type="image/png")
+    # get actual image
+
+    try:
+        skin_image = skin_from_url(url)
+    except UrlError:
+        return HTTPException(status_code=404, detail="Invalid URL")
+    except ImageSizeError:
+        return HTTPException(status_code=404, detail="Image must be 64x64 pixels large")
+
+    image = render_function(skin_image, slim)
+    # save to drive
+    byte_result = BytesIO()
+    image.save(byte_result, format='PNG')
+    byte_result.seek(0)
+    drive.put(filename, byte_result)
+    # return
+    byte_result = BytesIO()
+    image.save(byte_result, format='PNG')
+    byte_result.seek(0)
+    return StreamingResponse(byte_result, media_type="image/png")
+
+def template_args(player: str = Query(None, max_length=16), skin_url: str = Query(None, max_length=110), slim: bool = Query(False)):
+    return [player, skin_url, slim]
+
+@app.get('/portrait/')
+async def portrait(args: template_args = Depends()):
+    return api_template(args, renders.skin_to_portrait, deta.Drive('portraits'))
+
+@app.get('/profile/')
+async def profile(args: template_args = Depends()):
+    return api_template(args, renders.skin_to_profile, deta.Drive('profiles'))
