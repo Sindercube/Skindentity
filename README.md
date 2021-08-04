@@ -13,6 +13,8 @@
   </p>
 </h1>
 
+Python FastAPI with a collection of Minecraft Skin rendering APIs.
+
 ## Current APIs
 
 ### `https://skindentity.deta.dev/portrait/?player=<name>`
