@@ -66,7 +66,7 @@ def api_template(args, render_function, drive):
         try:
             skin_data = skin_from_player(player)
             url = skin_data[0]
-            if slim != None:
+            if slim == None:
                 slim = skin_data[1]
         except UnknownPlayerError:
             return HTTPException(status_code=404, detail="Unknown player")
