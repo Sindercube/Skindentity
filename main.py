@@ -64,7 +64,10 @@ def api_template(args, render_function, drive):
         return HTTPException(status_code=404, detail="You must specify a player or a skin URL")
     if player:
         try:
-            url, slim = skin_from_player(player)
+            skin_data = skin_from_player(player)
+            url = skin_data[0]
+            if slim != None:
+                slim = skin_data[1]
         except UnknownPlayerError:
             return HTTPException(status_code=404, detail="Unknown player")
     print(slim)
@@ -102,7 +105,7 @@ def api_template(args, render_function, drive):
     byte_result.seek(0)
     return StreamingResponse(byte_result, media_type="image/png")
 
-def template_args(player: str = Query(None, max_length=16), skin_url: str = Query(None, max_length=110), slim: bool = Query(False)):
+def template_args(player: str = Query(None, max_length=16), skin_url: str = Query(None, max_length=110), slim: bool = Query(None)):
     return [player, skin_url, slim]
 
 @app.get('/portrait/')
