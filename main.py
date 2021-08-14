@@ -9,7 +9,7 @@ from json import loads
 from json.decoder import JSONDecodeError
 from base64 import b64decode
 
-import renders
+from renders import *
 
 class ImageSizeError(Exception):
     pass
@@ -52,7 +52,7 @@ def skin_from_url(url):
     except UnidentifiedImageError:
         raise UrlError
     if image.size == (64, 32):
-        image = renders.old_to_new_skin(image)
+        image = old_to_new_skin(image)
     if image.size != (64, 64):
         raise ImageSizeError
     return image
@@ -108,10 +108,14 @@ def api_template(args, render_function, drive):
 def template_args(player: str = Query(None, max_length=16), skin_url: str = Query(None, max_length=110), slim: bool = Query(None)):
     return [player, skin_url, slim]
 
+@app.get('/skin/')
+async def skin(args: template_args = Depends()):
+    return api_template(args, lambda x, _: x, deta.Drive('skins'))
+
 @app.get('/portrait/')
 async def portrait(args: template_args = Depends()):
-    return api_template(args, renders.skin_to_portrait, deta.Drive('portraits'))
+    return api_template(args, skin_to_portrait, deta.Drive('portraits'))
 
 @app.get('/profile/')
 async def profile(args: template_args = Depends()):
-    return api_template(args, renders.skin_to_profile, deta.Drive('profiles'))
+    return api_template(args, skin_to_profile, deta.Drive('profiles'))

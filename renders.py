@@ -1,47 +1,38 @@
 from PIL import Image, ImageEnhance
 
-def old_to_new_skin(image):
-    final_image = Image.new('RGBA', (64, 64))
-    leg_copy = image.crop((0, 16, 16, 32))
-    arm_copy = image.crop((40, 16, 56, 32))
-    final_image.paste(image, (0, 0))
-    final_image.paste(leg_copy, (16, 48))
-    final_image.paste(arm_copy, (32, 48))
-    return final_image
-
-def skin_to_profile(image, slim):
+def skin_to_profile(skin: Image, slim: bool) -> Image:
 
     final_image = Image.new('RGBA', (12, 12))
 
-    head = face_from_skin(image, (8, 8, 16, 16), (40, 8, 48, 16))
+    head = face_from_skin(skin, (8, 8, 16, 16), (40, 8, 48, 16))
     final_image.paste(head, (2, 2))
 
     return final_image
 
-def skin_to_portrait(image, slim):
+def skin_to_portrait(skin: Image, slim: bool) -> Image:
 
     final_image = Image.new('RGBA', (24, 24))
 
-    head_front = face_from_skin(image, (8, 8, 16, 16), (40, 8, 48, 16))
+    head_front = face_from_skin(skin, (8, 8, 16, 16), (40, 8, 48, 16))
     final_image.paste(head_front, (10, 2))
-    head_side = side_from_skin(image, (0, 8, 8, 16), (32, 8, 40, 16))
+    head_side = side_from_skin(skin, (0, 8, 8, 16), (32, 8, 40, 16))
     final_image.paste(head_side, (5, 1), head_side)
-    body_mid = face_from_skin(image, (20, 20, 28, 32), (20, 36, 28, 48))
+    body_mid = face_from_skin(skin, (20, 20, 28, 32), (20, 36, 28, 48))
     final_image.paste(body_mid, (9, 11))
     if slim:
-        arm_left = face_from_skin(image, (36, 52, 39, 64), (52, 52, 55, 64))
+        arm_left = face_from_skin(skin, (36, 52, 39, 64), (52, 52, 55, 64))
     else:
-        arm_left = face_from_skin(image, (36, 52, 40, 64), (52, 52, 56, 64))
+        arm_left = face_from_skin(skin, (36, 52, 40, 64), (52, 52, 56, 64))
     final_image.paste(arm_left, (18, 11))
     if slim:
-        arm_right = face_from_skin(image, (44, 20, 47, 32), (44, 36, 47, 48))
+        arm_right = face_from_skin(skin, (44, 20, 47, 32), (44, 36, 47, 48))
         final_image.paste(arm_right, (5, 11))
-        arm_right_side = side_from_skin(image, (40, 20, 44, 32), (40, 36, 44, 48))
+        arm_right_side = side_from_skin(skin, (40, 20, 44, 32), (40, 36, 44, 48))
         final_image.paste(arm_right_side, (2, 10), arm_right_side)
     else:
-        arm_right = face_from_skin(image, (44, 20, 48, 32), (44, 36, 48, 48))
+        arm_right = face_from_skin(skin, (44, 20, 48, 32), (44, 36, 48, 48))
         final_image.paste(arm_right, (4, 11))
-        arm_right_side = side_from_skin(image, (40, 20, 44, 32), (40, 36, 44, 48))
+        arm_right_side = side_from_skin(skin, (40, 20, 44, 32), (40, 36, 44, 48))
         final_image.paste(arm_right_side, (1, 10), arm_right_side)
 
     outline_image = Image.new('RGBA', (24, 24), (0, 0, 0, 0))
@@ -57,10 +48,21 @@ def skin_to_portrait(image, slim):
 
     return enhanced_im
 
-def side_from_skin(image, main_pos, overlay_pos):
+# utils
 
-    main = image.crop(main_pos).convert("RGBA")
-    overlay = image.crop(overlay_pos).convert("RGBA")
+def old_to_new_skin(skin):
+    final_image = Image.new('RGBA', (64, 64))
+    leg_copy = skin.crop((0, 16, 16, 32))
+    arm_copy = skin.crop((40, 16, 56, 32))
+    final_image.paste(skin, (0, 0))
+    final_image.paste(leg_copy, (16, 48))
+    final_image.paste(arm_copy, (32, 48))
+    return final_image
+
+def side_from_skin(skin, main_pos, overlay_pos):
+
+    main = skin.crop(main_pos).convert("RGBA")
+    overlay = skin.crop(overlay_pos).convert("RGBA")
     
     main_p = Image.new('RGBA', (main.width+2, main.height+2), (0, 0, 0, 0))
     main_p.paste(main, (1, 1))
@@ -73,10 +75,10 @@ def side_from_skin(image, main_pos, overlay_pos):
     
     return enhanced_im.resize(( int(main_p.width/2)+1, main_p.height ), Image.NEAREST)
 
-def face_from_skin(image, main_pos, overlay_pos):
+def face_from_skin(skin, main_pos, overlay_pos):
 
-    main = image.crop(main_pos).convert("RGBA")
-    overlay = image.crop(overlay_pos).convert("RGBA")
+    main = skin.crop(main_pos).convert("RGBA")
+    overlay = skin.crop(overlay_pos).convert("RGBA")
     
     main = Image.alpha_composite(main, overlay)
 

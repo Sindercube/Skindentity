@@ -1,2 +1,4 @@
-/__pycache__
-/.deta
+/__pycache__/
+/.deta/
+desktop.ini
+test.py
