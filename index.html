@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<body>
+<div id='container'>
+</body>
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta name="description" content="Python FastAPI with a collection of Minecraft Skin rendering APIs.">
+  <meta property="og:title" content="Skindentity">
+  <meta property="og:description" content="Python FastAPI with a collection of Minecraft Skin rendering APIs.">
+  <meta property="og:image" content="https://raw.github.com/Sorrowfall/Skindentity/main/icon.png">
+
+  <title>Skindentity</title>
+  <link rel="icon" href="icon.png">
+
+  <style>
+#container {
+margin: auto;
+width: 73%;
+background-color: gray;
+padding: 2%
+}
+
+.render img {
+-ms-interpolation-mode: nearest-neighbor;
+image-rendering: crisp-edges;
+image-rendering: pixelated;
+width: 320px;
+padding-top: 1%;
+padding-bottom: 1%;
+}
+  </style>
+
+  <script>
+function main() {
+    const renders = ['portrait', 'profile', 'skin'];
+    for (i in renders) {
+        const render = renders[i]
+        var div = document.createElement('div');
+        div.id = render;
+        div.classList.add('render');
+        var label = document.createElement('label');
+        label.innerText = 'https://skindentity.deta.dev/'+render+'/?player=';
+        var input = document.createElement('input');
+        input.onkeyup = function() {updateImage(this)};
+        input.type = 'minecraft_player';
+        input.placeholder = 'Steve';
+        var img = document.createElement('img');
+        img.src = 'https://skindentity.deta.dev/'+render+'/?player=MHF_Steve';
+        img.onerror = async function() {this.src = 'https://skindentity.deta.dev/'+render+'/?player=MHF_Steve'};
+        
+        div.appendChild(label);
+        div.appendChild(input);
+        div.appendChild(document.createElement('br'));
+        div.appendChild(img);
+        document.getElementById('container').appendChild(div);
+    }
+}
+
+function updateImage(element) {
+  if (event.keyCode != 13) return;
+  const div = element.parentElement;
+  const name = element.value;
+  const label = div.getElementsByTagName('label')[0];
+  const url = label.innerText + name;
+  var img = div.getElementsByTagName('img')[0];
+  img.src = url;
+}
+
+main()
+
+  </script>
+
+</head>
+
+</html>
+</div>

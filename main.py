@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Query, HTTPException, Depends
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, HTMLResponse
 from PIL import Image, UnidentifiedImageError
 from urllib.request import Request, urlopen
 from os import getenv
@@ -107,6 +107,13 @@ def api_template(args, render_function, drive):
 
 def template_args(player: str = Query(None, max_length=16), skin_url: str = Query(None, max_length=110), slim: bool = Query(None)):
     return [player, skin_url, slim]
+
+with open('index.html', 'r') as file:
+    html_content = file.read()
+
+@app.get('/')
+async def main():
+    return HTMLResponse(content=html_content, status_code=200)
 
 @app.get('/skin/')
 async def skin(args: template_args = Depends()):

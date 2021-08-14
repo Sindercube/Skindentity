@@ -5,7 +5,7 @@
 
   <p align="center">
     <a href="https://discord.gg/dmKMAMf">
-      <img alt="Chat on Discord" src="https://img.shields.io/discord/627924293363171374?color=7289da&label=Chat%20on%20Discord">
+      <img alt="Chat on Discord" src="https://img.shields.io/badge/Chat%20on-Discord-%237289da">
     </a>
     <a href="https://go.deta.dev/deploy">
       <img alt="Deploy to DETA" src="https://img.shields.io/badge/Deploy%20to-DETA-%23D53AA2">
@@ -21,6 +21,8 @@ Python FastAPI with a collection of Minecraft Skin rendering APIs.
 This API is mainly meant for server owners or administrators who want to add fancier icons to their GUIs.
 
 ## Current APIs
+
+> #### For an easier time figuring out how to use the API, [click here](https://skindentity.deta.dev).
 
 ### `https://skindentity.deta.dev/portrait/?player=<name>`
 ![preview](previews/portrait.png)
@@ -40,8 +42,6 @@ This API is mainly meant for server owners or administrators who want to add fan
 |`player`|`str`|Which player's skin to use
 |`image_url`|`str`|Link to get an image from
 |`slim`|`bool`|Render skins with slim arms|`false`
-
-#### For an easier time figuring out how to use the API, [click here](https://skindentity.deta.dev/docs).
 
 ### Planned Arguments
 
@@ -90,4 +90,6 @@ async def new_api(args: template_args = Depends()):
     return api_template(args, new_render, deta.Drive('new_renders'))
 ```
 
-#### Psst, want to host your own API for free? Go check out [DETA](https://www.deta.sh/), they're pretty cool.
+Anyone with any graphic design knowledge can also contribute by redesigning the landing page of the website.
+
+###### Psst, want to host your own API for free? Go check out [DETA](https://www.deta.sh/), they're pretty cool.
