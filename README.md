@@ -24,13 +24,13 @@ This API is mainly meant for server owners or administrators who want to add fan
 
 > #### For an easier time figuring out how to use the API, [click here](https://skindentity.deta.dev).
 
-### `https://skindentity.deta.dev/portrait/?player=<name>`
+### `https://skindentity.deta.dev/portrait/?player_name=<name>`
 ![preview](previews/portrait.png)
 
-### `https://skindentity.deta.dev/profile/?player=<name>`
+### `https://skindentity.deta.dev/profile/?player_name=<name>`
 ![preview](previews/profile.png)
 
-### `https://skindentity.deta.dev/skin/?player=<name>`
+### `https://skindentity.deta.dev/skin/?player_name=<name>`
 ![preview](previews/skin.png)
 
 > #### You can set `MHF_Steve` as the name to use the default Steve skin.
@@ -39,9 +39,10 @@ This API is mainly meant for server owners or administrators who want to add fan
 
 |Value|Type|Description|Default|
 |-|-|-|-|
-|`player`|`str`|Which player's skin to use
-|`image_url`|`str`|Link to get an image from
-|`slim`|`bool`|Render skins with slim arms|`false`
+|`player_name`|`str`|Which player's skin to use
+|`skin_url`|`str`|Link to get an image
+|`skin_base64`|`str`|Base64 encoded image
+|`slim`|`bool`|Whether or not to render skins with slim arms|`false`
 
 ### Planned Arguments
 
@@ -90,6 +91,6 @@ async def new_api(args: template_args = Depends()):
     return api_template(args, new_render, deta.Drive('new_renders'))
 ```
 
-Anyone with any graphic design knowledge can also contribute by redesigning the landing page of the website.
+Anyone with any web design knowledge can also contribute by redesigning the landing page of the website.
 
 ###### Psst, want to host your own API for free? Go check out [DETA](https://www.deta.sh/), they're pretty cool.

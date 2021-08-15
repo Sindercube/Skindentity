@@ -1,4 +1,5 @@
-from fastapi import FastAPI, Query, HTTPException, Depends
+from fastapi import FastAPI, File, UploadFile, Query, HTTPException, Depends
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import StreamingResponse, HTMLResponse
 from PIL import Image, UnidentifiedImageError
 from urllib.request import Request, urlopen
@@ -57,72 +58,79 @@ def skin_from_url(url):
         raise ImageSizeError
     return image
 
-def api_template(args, render_function, drive):
-    player, url, slim = args
-    
-    if not player and not url:
-        return HTTPException(status_code=404, detail="You must specify a player or a skin URL")
+async def api_template(render_function, drive, player, skin_url, skin_base64, slim):
+
     if player:
         try:
-            skin_data = skin_from_player(player)
-            url = skin_data[0]
+            url, pot_slim = skin_from_player(player)
+            filename = url.split('/')[-1]
+            try:
+                skin = skin_from_url(url)
+            except UrlError:
+                return HTTPException(status_code=404, detail="Invalid URL")
+            except ImageSizeError:
+                return HTTPException(status_code=404, detail="Image must be 64x64 pixels large")
             if slim == None:
-                slim = skin_data[1]
+                slim = pot_slim
         except UnknownPlayerError:
             return HTTPException(status_code=404, detail="Unknown player")
-    print(slim)
-    filename = url.split('/')[-1]
-    if not filename.endswith('.png'):
-        filename = filename.rsplit('.')[0]+'.png'
-    # get potential image
+    elif skin_url:
+        filename = skin_url.split('/')[-1]
+        try:
+            skin = skin_from_url(skin_url)
+        except UrlError:
+            return HTTPException(status_code=404, detail="Invalid URL")
+        except ImageSizeError:
+            return HTTPException(status_code=404, detail="Image must be 64x64 pixels large")
+    elif skin_base64:
+        b = BytesIO(b64decode(skin_base64))
+        try:
+            skin = Image.open(b)
+        except UrlError:
+            return HTTPException(status_code=404, detail="Invalid File, must be Image")
+        filename = skin_base64[1:12]
+    else:
+        return HTTPException(status_code=404, detail="You must specify a Player Name, Skin URL or Skin File.")
 
+    stored = False
     pot_image = drive.get(filename)
     if pot_image:
         image = Image.open(pot_image)
+        stored = True
+    else:
+        image = render_function(skin, slim)
+
+    if not stored:
         byte_result = BytesIO()
         image.save(byte_result, format='PNG')
         byte_result.seek(0)
+        drive.put(filename, byte_result)
 
-        return StreamingResponse(byte_result, media_type="image/png")
-    # get actual image
+    # post-processing, eventually
 
-    try:
-        skin_image = skin_from_url(url)
-    except UrlError:
-        return HTTPException(status_code=404, detail="Invalid URL")
-    except ImageSizeError:
-        return HTTPException(status_code=404, detail="Image must be 64x64 pixels large")
-
-    image = render_function(skin_image, slim)
-    # save to drive
-    byte_result = BytesIO()
-    image.save(byte_result, format='PNG')
-    byte_result.seek(0)
-    drive.put(filename, byte_result)
-    # return
     byte_result = BytesIO()
     image.save(byte_result, format='PNG')
     byte_result.seek(0)
     return StreamingResponse(byte_result, media_type="image/png")
 
-def template_args(player: str = Query(None, max_length=16), skin_url: str = Query(None, max_length=110), slim: bool = Query(None)):
-    return [player, skin_url, slim]
+def template_args(player_name: str = Query(None, max_length=16), skin_url: str = Query(None, max_length=128), skin_base64: str = Query(None, max_length=16*1024), slim: bool = Query(None)):
+    return [player_name, skin_url, skin_base64, slim]
 
 with open('index.html', 'r') as file:
     html_content = file.read()
 
 @app.get('/')
-async def main():
+async def landing(args: template_args = Depends()):
     return HTMLResponse(content=html_content, status_code=200)
 
 @app.get('/skin/')
 async def skin(args: template_args = Depends()):
-    return api_template(args, lambda x, _: x, deta.Drive('skins'))
+    return await api_template(lambda x, *_: x, deta.Drive('skins'), *args)
 
 @app.get('/portrait/')
 async def portrait(args: template_args = Depends()):
-    return api_template(args, skin_to_portrait, deta.Drive('portraits'))
+    return await api_template(skin_to_portrait, deta.Drive('portraits'), *args)
 
 @app.get('/profile/')
 async def profile(args: template_args = Depends()):
-    return api_template(args, skin_to_profile, deta.Drive('profiles'))
+    return await api_template(skin_to_profile, deta.Drive('profiles'), *args)

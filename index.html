@@ -1,11 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<body>
-<div id='container'>
-</body>
-
-<head>
+  <head>
 
   <meta charset="UTF-8">
 
@@ -15,7 +11,7 @@
   <meta property="og:image" content="https://raw.github.com/Sorrowfall/Skindentity/main/icon.png">
 
   <title>Skindentity</title>
-  <link rel="icon" href="icon.png">
+  <link rel="icon" href="https://raw.github.com/Sorrowfall/Skindentity/main/icon.png">
 
   <style>
 #container {
@@ -37,45 +33,103 @@ padding-bottom: 1%;
 
   <script>
 function main() {
-    const renders = ['portrait', 'profile', 'skin'];
-    for (i in renders) {
-        const render = renders[i]
-        var div = document.createElement('div');
-        div.id = render;
-        div.classList.add('render');
-        var label = document.createElement('label');
-        label.innerText = 'https://skindentity.deta.dev/'+render+'/?player=';
-        var input = document.createElement('input');
-        input.onkeyup = function() {updateImage(this)};
-        input.type = 'minecraft_player';
-        input.placeholder = 'Steve';
-        var img = document.createElement('img');
-        img.src = 'https://skindentity.deta.dev/'+render+'/?player=MHF_Steve';
-        img.onerror = async function() {this.src = 'https://skindentity.deta.dev/'+render+'/?player=MHF_Steve'};
-        
-        div.appendChild(label);
-        div.appendChild(input);
-        div.appendChild(document.createElement('br'));
-        div.appendChild(img);
-        document.getElementById('container').appendChild(div);
-    }
+  const renders = ['portrait', 'profile', 'skin'];
+  const options = ['player_name', 'skin_url', 'skin_file'];
+  for (i in renders) {
+    const render = renders[i]
+    var div = document.createElement('div');
+    div.id = render;
+    div.classList.add('render');
+    var text_div = document.createElement('div');
+    text_div.classList.add('text');
+    var label = document.createElement('label');
+    label.innerText = 'https://skindentity.deta.dev/'+render+'/?';
+    var select = document.createElement('select');
+    select.onchange = function() {switchInput(this)};
+    for (e in options) {
+        const opt = options[e];
+        var option = document.createElement('option');
+        option.value = opt;
+        option.innerHTML = opt;
+        select.appendChild(option);
+    };
+    var label_two = document.createElement('label');
+    label_two.innerText = '=';
+    var input = document.createElement('input');
+    input.onchange = function() {updateImage(this)};
+    //input.onblur = function() {updateImage(this)};
+    input.type = 'minecraft_player';
+    input.placeholder = 'Steve';
+    var img = document.createElement('img');
+    img.src = 'https://raw.github.com/Sorrowfall/Skindentity/main/previews/' + render + '.png';
+    img.onerror = async function() {this.src = 'https://raw.github.com/Sorrowfall/Skindentity/main/previews/' + render + '.png'};
+
+    text_div.appendChild(label);
+    text_div.appendChild(select);
+    text_div.appendChild(label_two);
+    text_div.appendChild(input);
+    div.appendChild(text_div);
+    div.appendChild(img);
+
+    document.getElementById('container').appendChild(div);
+  }
 }
 
 function updateImage(element) {
-  if (event.keyCode != 13) return;
   const div = element.parentElement;
-  const name = element.value;
+  const input = element.value;
   const label = div.getElementsByTagName('label')[0];
-  const url = label.innerText + name;
+  const select = div.getElementsByTagName('select')[0];
+  const option = select.value;
   var img = div.getElementsByTagName('img')[0];
-  img.src = url;
+  var url = label.innerText + select.value + '=';
+  switch(option) {
+    case 'player_name':
+      img.src = url + input;
+      break;
+    case 'skin_url':
+      img.src = url + input;
+      break;
+    case 'skin_file':
+      const file = element.files[0];
+      var reader = new FileReader();
+
+      reader.onloadend = function() {
+        var b64 = reader.result.replace(/^data:.+;base64,/, '');
+        img.src = label.innerText + 'skin_base64=' + b64 + '=';
+      };
+      
+      reader.readAsDataURL(file);
+      break;
+  }
 }
 
-main()
+function switchInput(element) {
+  const div = element.parentElement;
+  const option = element.value;
+  var input = div.getElementsByTagName('input')[0];
+  switch(option) {
+    case 'player_name':
+      input.type = 'minecraft_player';
+      input.placeholder = 'Steve';
+    break;
+    case 'skin_url':
+      input.type = 'minecraft_skin_url';
+      input.placeholder = 'http://assets.mojang.com/SkinTemplates/steve.png';
+    break;
+    case 'skin_file':
+      input.type = 'file';
+      input.placeholder = null;
+    break;
+  }
+}
 
   </script>
 
-</head>
+  </head>
+
+  <body onload="main()">
+  <div id='container'>
+  </body>
 
 </html>
-</div>
