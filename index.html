@@ -81,7 +81,7 @@ function updateImage(element) {
   const label = div.getElementsByTagName('label')[0];
   const select = div.getElementsByTagName('select')[0];
   const option = select.value;
-  var img = div.getElementsByTagName('img')[0];
+  var img = div.parentElement.getElementsByTagName('img')[0];
   var url = label.innerText + select.value + '=';
   switch(option) {
     case 'player_name':
