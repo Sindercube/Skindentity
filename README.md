@@ -22,15 +22,15 @@ This API is mainly meant for server owners or administrators who want to add fan
 
 ## Current APIs
 
-> #### For an easier time figuring out how to use the API, [click here](https://skindentity.deta.dev).
+> #### For an interactive version of the API, [click here](https://skindentity.deta.dev).
 
-### `https://skindentity.deta.dev/portrait/?player_name=<name>`
+### `https://skindentity.deta.dev/portrait/
 ![preview](previews/portrait.png)
 
-### `https://skindentity.deta.dev/profile/?player_name=<name>`
-![preview](previews/profile.png)
+### `https://skindentity.deta.dev/face/
+![preview](previews/face.png)
 
-### `https://skindentity.deta.dev/skin/?player_name=<name>`
+### `https://skindentity.deta.dev/skin/
 ![preview](previews/skin.png)
 
 > #### You can set `MHF_Steve` as the name to use the default Steve skin.

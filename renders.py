@@ -1,6 +1,6 @@
 from PIL import Image, ImageEnhance
 
-def skin_to_profile(skin: Image, slim: bool) -> Image:
+def skin_to_face(skin: Image, slim: bool) -> Image:
 
     final_image = Image.new('RGBA', (12, 12))
 

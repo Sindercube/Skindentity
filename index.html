@@ -14,9 +14,13 @@
   <link rel="icon" href="https://raw.github.com/Sorrowfall/Skindentity/main/icon.png">
 
   <style>
+html, body {
+margin: auto;
+width: 85%;
+}
+
 #container {
 margin: auto;
-width: 73%;
 background-color: gray;
 padding: 2%
 }
@@ -33,7 +37,7 @@ padding-bottom: 1%;
 
   <script>
 function main() {
-  const renders = ['portrait', 'profile', 'skin'];
+  const renders = ['portrait', 'face', 'skin'];
   const options = ['player_name', 'skin_url', 'skin_file'];
   for (i in renders) {
     const render = renders[i]
@@ -96,7 +100,7 @@ function updateImage(element) {
 
       reader.onloadend = function() {
         var b64 = reader.result.replace(/^data:.+;base64,/, '');
-        img.src = label.innerText + 'skin_base64=' + b64 + '=';
+        img.src = label.innerText + 'skin_base64=' + b64;
       };
       
       reader.readAsDataURL(file);
@@ -129,7 +133,10 @@ function switchInput(element) {
   </head>
 
   <body onload="main()">
-  <div id='container'>
+  <h1>Skindentity</h1>
+  <p>For a better explanation on how to use the API, <a href='https://github.com/Sorrowfall/Skindentity/blob/main/README.md' target="_blank">click here</a>.</p>
+  <div id='container'></div>
+  <p>Check it out on <a href='https://github.com/Sorrowfall/Skindentity/' target="_blank">GitHub</a>.</p>
   </body>
 
 </html>
