@@ -8,7 +8,7 @@ from io import BytesIO
 from deta import Deta
 from json import loads
 from json.decoder import JSONDecodeError
-from base64 import b64decode
+from base64 import b64decode, binascii
 
 from renders import *
 
@@ -83,12 +83,15 @@ async def api_template(render_function, drive, player, skin_url, skin_base64, sl
         except ImageSizeError:
             return HTTPException(status_code=404, detail="Image must be 64x64 pixels large")
     elif skin_base64:
-        b = BytesIO(b64decode(skin_base64))
+        try:
+            b = BytesIO(b64decode(skin_base64 + '='))
+        except binascii.Error:
+            b = BytesIO(b64decode(skin_base64))
         try:
             skin = Image.open(b)
         except UrlError:
             return HTTPException(status_code=404, detail="Invalid File, must be Image")
-        filename = skin_base64[1:12]
+        filename = skin_base64[-12:-1]
     else:
         return HTTPException(status_code=404, detail="You must specify a Player Name, Skin URL or Skin File.")
 
@@ -131,6 +134,6 @@ async def skin(args: template_args = Depends()):
 async def portrait(args: template_args = Depends()):
     return await api_template(skin_to_portrait, deta.Drive('portraits'), *args)
 
-@app.get('/profile/')
-async def profile(args: template_args = Depends()):
-    return await api_template(skin_to_profile, deta.Drive('profiles'), *args)
+@app.get('/face/')
+async def face(args: template_args = Depends()):
+    return await api_template(skin_to_face, deta.Drive('profiles'), *args)
