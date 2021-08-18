@@ -119,13 +119,6 @@ async def api_template(render_function, drive, player, skin_url, skin_base64, sl
 def template_args(player_name: str = Query(None, max_length=16), skin_url: str = Query(None, max_length=128), skin_base64: str = Query(None, max_length=16*1024), slim: bool = Query(None)):
     return [player_name, skin_url, skin_base64, slim]
 
-with open('index.html', 'r') as file:
-    html_content = file.read()
-
-@app.get('/')
-async def landing(args: template_args = Depends()):
-    return HTMLResponse(content=html_content, status_code=200)
-
 @app.get('/skin/')
 async def skin(args: template_args = Depends()):
     return await api_template(lambda x, *_: x, deta.Drive('skins'), *args)

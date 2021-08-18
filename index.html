@@ -8,13 +8,19 @@
   <meta name="description" content="Python FastAPI with a collection of Minecraft Skin rendering APIs.">
   <meta property="og:title" content="Skindentity">
   <meta property="og:description" content="Python FastAPI with a collection of Minecraft Skin rendering APIs.">
-  <meta property="og:image" content="https://raw.github.com/Sorrowfall/Skindentity/main/icon.png">
+  <meta property="og:image" content="icon.png">
 
   <title>Skindentity</title>
-  <link rel="icon" href="https://raw.github.com/Sorrowfall/Skindentity/main/icon.png">
+  <link rel="icon" href="icon.png">
 
   <style>
+
+h1 {
+font-size: 30px;
+}
+
 html, body {
+font-family: "Minecraft";
 margin: auto;
 width: 85%;
 }
@@ -65,8 +71,9 @@ function main() {
     input.type = 'minecraft_player';
     input.placeholder = 'Steve';
     var img = document.createElement('img');
-    img.src = 'https://raw.github.com/Sorrowfall/Skindentity/main/previews/' + render + '.png';
-    img.onerror = async function() {this.src = 'https://raw.github.com/Sorrowfall/Skindentity/main/previews/' + render + '.png'};
+    img.src = 'previews/' + render + '.png';
+    img.alt = 'previews/' + render + '.png';
+    img.onerror = async function() {this.src = 'previews/' + render + '.png'};
 
     text_div.appendChild(label);
     text_div.appendChild(select);
