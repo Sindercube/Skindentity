@@ -24,13 +24,13 @@ This API is mainly meant for server owners or administrators who want to add fan
 
 > #### For an interactive version of the API, [click here](https://skindentity.deta.dev).
 
-### `https://skindentity.deta.dev/portrait/
+### skindentity.deta.dev/portrait/
 ![preview](previews/portrait.png)
 
-### `https://skindentity.deta.dev/face/
+### skindentity.deta.dev/face/
 ![preview](previews/face.png)
 
-### `https://skindentity.deta.dev/skin/
+### skindentity.deta.dev/skin/
 ![preview](previews/skin.png)
 
 > #### You can set `MHF_Steve` as the name to use the default Steve skin.
