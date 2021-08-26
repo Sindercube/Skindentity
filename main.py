@@ -3,7 +3,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import StreamingResponse, HTMLResponse
 from PIL import Image, UnidentifiedImageError
 from urllib.request import Request, urlopen
-from os import getenv
+from os import getenv, listdir, mkdir
 from io import BytesIO
 from deta import Deta
 from json import loads
@@ -58,12 +58,12 @@ def skin_from_url(url):
         raise ImageSizeError
     return image
 
-async def api_template(render_function, drive, player, skin_url, skin_base64, slim):
+async def api_template(render_function, path, player, skin_url, skin_base64, slim):
 
     if player:
         try:
             url, pot_slim = skin_from_player(player)
-            filename = url.split('/')[-1]
+            filename = url.split('/')[-1][-12:-1]
             try:
                 skin = skin_from_url(url)
             except UrlError:
@@ -75,7 +75,7 @@ async def api_template(render_function, drive, player, skin_url, skin_base64, sl
         except UnknownPlayerError:
             return HTTPException(status_code=404, detail="Unknown player")
     elif skin_url:
-        filename = skin_url.split('/')[-1]
+        filename = skin_url.split('/')[-1][-12:-1]
         try:
             skin = skin_from_url(skin_url)
         except UrlError:
@@ -95,19 +95,19 @@ async def api_template(render_function, drive, player, skin_url, skin_base64, sl
     else:
         return HTTPException(status_code=404, detail="You must specify a Player Name, Skin URL or Skin File.")
 
-    stored = False
-    pot_image = drive.get(filename)
-    if pot_image:
-        image = Image.open(pot_image)
-        stored = True
+    if not filename.endswith('.png'):
+        filename += '.png'
+
+    try:
+        files = listdir('/tmp/'+path)
+    except FileNotFoundError:
+        mkdir('/tmp/'+path)
+        files = []
+    if filename in files:
+        image = Image.open('/tmp/'+path+filename)
     else:
         image = render_function(skin, slim)
-
-    if not stored:
-        byte_result = BytesIO()
-        image.save(byte_result, format='PNG')
-        byte_result.seek(0)
-        drive.put(filename, byte_result)
+        image.save('/tmp/'+path+filename)
 
     # post-processing, eventually
 
@@ -121,12 +121,12 @@ def template_args(player_name: str = Query(None, max_length=16), skin_url: str =
 
 @app.get('/skin/')
 async def skin(args: template_args = Depends()):
-    return await api_template(lambda x, *_: x, deta.Drive('skins'), *args)
+    return await api_template(lambda x, *_: x, 'skins/', *args)
 
 @app.get('/portrait/')
 async def portrait(args: template_args = Depends()):
-    return await api_template(skin_to_portrait, deta.Drive('portraits'), *args)
+    return await api_template(skin_to_portrait, 'portraits/' , *args)
 
 @app.get('/face/')
 async def face(args: template_args = Depends()):
-    return await api_template(skin_to_face, deta.Drive('profiles'), *args)
+    return await api_template(skin_to_face, 'profiles/', *args)
