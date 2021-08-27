@@ -22,7 +22,7 @@ This API is mainly meant for server owners or administrators who want to add fan
 
 ## Current APIs
 
-> #### For an interactive version of the API, [click here](https://skindentity.deta.dev).
+> #### For an interactive version of the API, [click here](https://sorrowfall.github.io/Skindentity).
 
 ### skindentity.deta.dev/portrait/
 ![preview](previews/portrait.png)
@@ -75,22 +75,25 @@ def new_render(skin: Image, slim: bool) -> Image:
     return final_image
 ```
 
-Then, add a new definition inside of [main.py](main.py), with an `app.get('/api_name/')` decorator, and `args: template_args = Depends()` as the arguments.
+Then, add a new definition inside of [main.py](main.py), with an `app.get('/api_name/')` decorator, and `args: template_args = Depends()` as the only argument.
 
 - The `app.get('/api_name/')` decorator tells the website which path needs to be entered to use your render.
 
 - The `args: template_args = Depends()` argument tells the API to use the same arguments as the other APIs. This is so each API is easy to switch around.
 
-Inside of the function, return the results of the `api_template()` function with `args` (the default arguments), `new_method` (defined in [renders.py](renders.py)) and a new deta drive object (`deta.Drive('new drive')`) as the arguments.
+Inside of the function, return the results of the `api_template()` function with `args`, `render_function` and `'cached_renders_path/'` as the arguments.
 
-- The `api_template()` function sends all of the data back for further processing, and returns the rendered image.
+- `args` passes the default arguments to the template.
+- the `render_function` argument is the function defined in [renders.py](renders.py), which gets called to process the image.
+- the `'cached_renders_path/'` argument is the path to cache images in. (After `'/tmp/'`)
+- The `api_template()` function sends all of the data for processing, and returns the rendered image.
 
 ```py
 @app.get('/api_name/')
-async def new_api(args: template_args = Depends()):
-    return api_template(args, new_render, deta.Drive('new_renders'))
+async def render_name(args: template_args = Depends()):
+    return api_template(args, render_function, 'cached_renders_path/')
 ```
 
-Anyone with any web design knowledge can also contribute by redesigning the landing page of the website.
+Anyone with any web design knowledge can also contribute by redesigning the interactive website.
 
-###### Psst, want to host your own API for free? Go check out [DETA](https://www.deta.sh/), they're pretty cool.
+###### Psst, looking for a place to host your API for free? Check out [DETA](https://www.deta.sh/), they're pretty cool.
