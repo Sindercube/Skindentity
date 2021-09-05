@@ -1,7 +1,15 @@
 from PIL import Image, ImageEnhance
 
 def skin_to_face(skin: Image, slim: bool) -> Image:
+    """Turn a minecraft skin into a simple front facing image.
 
+    Args:
+        skin (Image): Minecraft skin Image.
+        slim (bool): Whether the skin uses the slim body type.
+
+    Returns:
+        Image: Finished Image object.
+    """
     final_image = Image.new('RGBA', (12, 12))
 
     head = face_from_skin(skin, (8, 8, 16, 16), (40, 8, 48, 16))
@@ -10,7 +18,15 @@ def skin_to_face(skin: Image, slim: bool) -> Image:
     return final_image
 
 def skin_to_portrait(skin: Image, slim: bool) -> Image:
+    """Turn a minecraft skin into a pixelated 3D portrait.
 
+    Args:
+        skin (Image): Minecraft skin Image.
+        slim (bool): Whether the skin uses the slim body type.
+
+    Returns:
+        Image: Finished Image object.
+    """
     final_image = Image.new('RGBA', (24, 24))
 
     head_front = face_from_skin(skin, (8, 8, 16, 16), (40, 8, 48, 16))
@@ -50,7 +66,15 @@ def skin_to_portrait(skin: Image, slim: bool) -> Image:
 
 # utils
 
-def old_to_new_skin(skin):
+def old_to_new_skin(skin: Image) -> Image:
+    """Resizes old 32x64 skins to use the new 64x64 format.
+
+    Args:
+        skin (Image): Minecraft skin Image.
+
+    Returns:
+        Image: Finished Image object.
+    """    
     final_image = Image.new('RGBA', (64, 64))
     leg_copy = skin.crop((0, 16, 16, 32))
     arm_copy = skin.crop((40, 16, 56, 32))
@@ -59,8 +83,8 @@ def old_to_new_skin(skin):
     final_image.paste(arm_copy, (32, 48))
     return final_image
 
-def side_from_skin(skin, main_pos, overlay_pos):
-
+def side_from_skin(skin: Image, main_pos, overlay_pos):
+    
     main = skin.crop(main_pos).convert("RGBA")
     overlay = skin.crop(overlay_pos).convert("RGBA")
     
