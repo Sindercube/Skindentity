@@ -3,9 +3,8 @@ from fastapi.responses import StreamingResponse
 from PIL import Image, UnidentifiedImageError
 from urllib.request import Request, urlopen
 from pathlib import Path
-from os import getenv
+from os import getenv, name
 from io import BytesIO
-from deta import Deta
 from json import loads
 from json.decoder import JSONDecodeError
 from base64 import b64decode, binascii
@@ -23,7 +22,6 @@ class UnknownPlayerError(Exception):
     pass
 
 app = FastAPI()
-deta = Deta(getenv('DETA_PROJECT_KEY'))
 
 def skin_url_from_player(player_name: str) -> [str, bool]:
     """Get a player's skin URL (And skin model).
@@ -105,7 +103,7 @@ async def api_template(render_function: Callable, path: str, player: str, skin_u
     if not filename.endswith('.png'):
         filename += '.png'
 
-    pot_path = Path.cwd() / 'tmp'/ path
+    pot_path = Path(f'{"/" if name == "nt" else ""}tmp') / path
     pot_file = pot_path / filename
     if Path(pot_file).is_file():
         image = Image.open(pot_file)
