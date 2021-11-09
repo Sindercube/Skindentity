@@ -1,14 +1,14 @@
-from fastapi import FastAPI, File, UploadFile, Query, HTTPException, Depends
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import StreamingResponse, HTMLResponse
+from fastapi import Depends, FastAPI, Query, HTTPException
+from fastapi.responses import StreamingResponse
 from PIL import Image, UnidentifiedImageError
 from urllib.request import Request, urlopen
-from os import getenv, listdir, mkdir
+from pathlib import Path
+from os import getenv, name
 from io import BytesIO
-from deta import Deta
 from json import loads
 from json.decoder import JSONDecodeError
 from base64 import b64decode, binascii
+from typing import Callable
 
 from renders import *
 
@@ -22,11 +22,21 @@ class UnknownPlayerError(Exception):
     pass
 
 app = FastAPI()
-deta = Deta(getenv('DETA_PROJECT_KEY'))
 
-def skin_from_player(player):
+def skin_url_from_player(player_name: str) -> [str, bool]:
+    """Get a player's skin URL (And skin model).
+
+    Args:
+        player_name (String): Minecraft In-Game Name.
+
+    Raises:
+        UnknownPlayerError: Raised when no played with the input name is found.
+
+    Returns:
+        String, Boolean: Skin URL, Whether the skin uses the slim body type.
+    """
     try:
-        id_json = loads(urlopen('https://api.mojang.com/users/profiles/minecraft/' + player).read())
+        id_json = loads(urlopen('https://api.mojang.com/users/profiles/minecraft/' + player_name).read())
     except JSONDecodeError:
         raise UnknownPlayerError
     if not id_json:
@@ -42,9 +52,18 @@ def skin_from_player(player):
         slim = False
     return link, slim
 
-def skin_from_url(url):
+def skin_from_url(skin_url: str) -> Image:
+    """Get an image object from a minecraft skin url
+    Args:
+        skin_url (String): A Minecraft Player's skin URL.
+    Raises:
+        UrlError: Raised on any URL errors.
+        ImageSizeError: Raised when the image isn't the correct size of a Minecraft skin.
+    Returns:
+        Image: The minecraft skin as an Image object.
+    """
     try:
-        req = Request(url=url, headers={'User-Agent':' Mozilla/5.0 (Windows NT 6.1; WOW64; rv:12.0) Gecko/20100101 Firefox/12.0'})
+        req = Request(url=skin_url, headers={'User-Agent':' Mozilla/5.0 (Windows NT 6.1; WOW64; rv:12.0) Gecko/20100101 Firefox/12.0'})
         file = urlopen(req)
     except ValueError:
         raise UrlError
@@ -58,56 +77,71 @@ def skin_from_url(url):
         raise ImageSizeError
     return image
 
-async def api_template(render_function, path, player, skin_url, skin_base64, slim):
+async def api_template(render_function: Callable, path: str, player: str, skin_url: str, skin_base64: str, slim: bool) -> StreamingResponse:
+    """Template for every API, for easy access.
 
+    Args:
+        render_function (function): Which function to process skin images through.
+        path (str): What folder to cache processed images in. (after '/tmp/')
+        *args (various): Refer to template_args()
+
+    Returns:
+        StreamingResponse: Processed image object as a FastAPI response object.
+    """
     if player:
         try:
-            url, pot_slim = skin_from_player(player)
-            filename = url.split('/')[-1][-12:-1]
+            url, pot_slim = skin_url_from_player(player)
+            filename = url.split('/')[-1][-16:-1]
+        except UnknownPlayerError:
+            return HTTPException(status_code=404, detail="Unknown player")
+    elif skin_url:
+        filename = skin_url.split('/')[-1][-16:-1]
+    elif skin_base64:
+        filename = skin_base64[-16:-1]
+    else:
+        return HTTPException(status_code=404, detail="You must specify a Player Name, Skin URL or Skin File.")
+    if not filename.endswith('.png'):
+        filename += '.png'
+
+    pot_path = Path(f'{"/" if name != "nt" else ""}tmp') / path
+    pot_file = pot_path / filename
+    if Path(pot_file).is_file():
+        image = Image.open(pot_file)
+    else:
+        if player:
             try:
-                skin = skin_from_url(url)
+                try:
+                    skin = skin_from_url(url)
+                except UrlError:
+                    return HTTPException(status_code=404, detail="Invalid URL")
+                except ImageSizeError:
+                    return HTTPException(status_code=404, detail="Image must be 64x64 pixels large")
+                if slim == None:
+                    slim = pot_slim
+            except UnknownPlayerError:
+                return HTTPException(status_code=404, detail="Unknown player")
+        elif skin_url:
+            try:
+                skin = skin_from_url(skin_url)
             except UrlError:
                 return HTTPException(status_code=404, detail="Invalid URL")
             except ImageSizeError:
                 return HTTPException(status_code=404, detail="Image must be 64x64 pixels large")
-            if slim == None:
-                slim = pot_slim
-        except UnknownPlayerError:
-            return HTTPException(status_code=404, detail="Unknown player")
-    elif skin_url:
-        filename = skin_url.split('/')[-1][-12:-1]
-        try:
-            skin = skin_from_url(skin_url)
-        except UrlError:
-            return HTTPException(status_code=404, detail="Invalid URL")
-        except ImageSizeError:
-            return HTTPException(status_code=404, detail="Image must be 64x64 pixels large")
-    elif skin_base64:
-        try:
-            b = BytesIO(b64decode(skin_base64 + '='))
-        except binascii.Error:
-            b = BytesIO(b64decode(skin_base64))
-        try:
-            skin = Image.open(b)
-        except UrlError:
-            return HTTPException(status_code=404, detail="Invalid File, must be Image")
-        filename = skin_base64[-12:-1]
-    else:
-        return HTTPException(status_code=404, detail="You must specify a Player Name, Skin URL or Skin File.")
-
-    if not filename.endswith('.png'):
-        filename += '.png'
-
-    try:
-        files = listdir('/tmp/'+path)
-    except FileNotFoundError:
-        mkdir('/tmp/'+path)
-        files = []
-    if filename in files:
-        image = Image.open('/tmp/'+path+filename)
-    else:
+        elif skin_base64:
+            try:
+                b = BytesIO(b64decode(skin_base64 + '='))
+            except binascii.Error:
+                b = BytesIO(b64decode(skin_base64))
+            try:
+                skin = Image.open(b)
+            except UrlError:
+                return HTTPException(status_code=404, detail="Invalid File, must be Image")
         image = render_function(skin, slim)
-        image.save('/tmp/'+path+filename)
+        try:
+            image.save(pot_file)
+        except FileNotFoundError:
+            Path(pot_path).mkdir()
+            image.save(pot_file)
 
     # post-processing, eventually
 
@@ -117,6 +151,17 @@ async def api_template(render_function, path, player, skin_url, skin_base64, sli
     return StreamingResponse(byte_result, media_type="image/png")
 
 def template_args(player_name: str = Query(None, max_length=16), skin_url: str = Query(None, max_length=128), skin_base64: str = Query(None, max_length=16*1024), slim: bool = Query(None)):
+    """Optional arguments for APIs.
+
+    Args:
+        player_name (str, optional): Which Minecraft Player to get the skin image from.
+        skin_url (str, optional): What URL to get the skin image from.
+        skin_base64 (str, optional): Base64 hash to decode for the skin image.
+        slim (bool, optional): Whether the skin uses the slim body type.
+
+    Returns:
+        self
+    """
     return [player_name, skin_url, skin_base64, slim]
 
 @app.get('/skin/')

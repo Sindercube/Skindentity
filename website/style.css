@@ -1,0 +1,58 @@
+@font-face {
+font-family: "Minecraft";
+font-style: normal;
+font-display: swap;
+font-weight: 400;
+src:
+  url("fonts/minecraft.woff") format("woff");
+}
+
+input {
+font-family: "Minecraft";
+}
+
+select {
+font-family: "Minecraft";
+}
+
+choice {
+font-family: "Minecraft";
+}
+
+button {
+font-family: "Minecraft";
+}
+
+h1 {
+font-size: 36px;
+}
+
+p {
+font-size: 18px;
+}
+
+label {
+font-size: 18px;
+}
+
+html, body {
+font-family: "Minecraft";
+margin: auto;
+width: 85%;
+}
+
+#container {
+margin: auto;
+background-color: gray;
+padding: 2%
+}
+
+.render img {
+-ms-interpolation-mode: nearest-neighbor;
+image-rendering: crisp-edges;
+image-rendering: pixelated;
+height: 320px;
+width: 320px;
+padding-top: 1%;
+padding-bottom: 1%;
+}
