@@ -103,7 +103,7 @@ async def api_template(render_function: Callable, path: str, player: str, skin_u
     if not filename.endswith('.png'):
         filename += '.png'
 
-    pot_path = Path(f'{"/" if name == "nt" else ""}tmp') / path
+    pot_path = Path(f'{"/" if name != "nt" else ""}tmp') / path
     pot_file = pot_path / filename
     if Path(pot_file).is_file():
         image = Image.open(pot_file)

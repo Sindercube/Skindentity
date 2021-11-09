@@ -1,47 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-
-  <head>
-
-  <meta charset="UTF-8">
-
-  <meta name="description" content="Python FastAPI with a collection of Minecraft Skin rendering APIs.">
-  <meta property="og:title" content="Skindentity">
-  <meta property="og:description" content="Python FastAPI with a collection of Minecraft Skin rendering APIs.">
-  <meta property="og:image" content="icon.png">
-
-  <title>Skindentity</title>
-  <link rel="icon" href="icon.png">
-
-  <style>
-
-h1 {
-font-size: 30px;
-}
-
-html, body {
-font-family: "Minecraft";
-margin: auto;
-width: 85%;
-}
-
-#container {
-margin: auto;
-background-color: gray;
-padding: 2%
-}
-
-.render img {
--ms-interpolation-mode: nearest-neighbor;
-image-rendering: crisp-edges;
-image-rendering: pixelated;
-width: 320px;
-padding-top: 1%;
-padding-bottom: 1%;
-}
-  </style>
-
-  <script>
 function main() {
   const renders = ['portrait', 'face', 'skin'];
   const options = ['player_name', 'skin_url', 'skin_file'];
@@ -67,9 +23,11 @@ function main() {
     label_two.innerText = '=';
     var input = document.createElement('input');
     input.onchange = function() {updateImage(this)};
-    //input.onblur = function() {updateImage(this)};
     input.type = 'minecraft_player';
     input.placeholder = 'Steve';
+    var button = document.createElement('button');
+    button.innerText = "Copy";
+    button.onclick = function() {navigator.clipboard.writeText(urlFromInputs(this.parentElement));};
     var img = document.createElement('img');
     img.src = 'previews/' + render + '.png';
     img.alt = 'previews/' + render + '.png';
@@ -79,6 +37,7 @@ function main() {
     text_div.appendChild(select);
     text_div.appendChild(label_two);
     text_div.appendChild(input);
+    div.appendChild(button);
     div.appendChild(text_div);
     div.appendChild(img);
 
@@ -88,31 +47,8 @@ function main() {
 
 function updateImage(element) {
   const div = element.parentElement;
-  const input = element.value;
-  const label = div.getElementsByTagName('label')[0];
-  const select = div.getElementsByTagName('select')[0];
-  const option = select.value;
   var img = div.parentElement.getElementsByTagName('img')[0];
-  var url = label.innerText + select.value + '=';
-  switch(option) {
-    case 'player_name':
-      img.src = url + input;
-      break;
-    case 'skin_url':
-      img.src = url + input;
-      break;
-    case 'skin_file':
-      const file = element.files[0];
-      var reader = new FileReader();
-
-      reader.onloadend = function() {
-        var b64 = reader.result.replace(/^data:.+;base64,/, '');
-        img.src = label.innerText + 'skin_base64=' + b64;
-      };
-      
-      reader.readAsDataURL(file);
-      break;
-  }
+  img.src = urlFromInputs(div);
 }
 
 function switchInput(element) {
@@ -123,27 +59,38 @@ function switchInput(element) {
     case 'player_name':
       input.type = 'minecraft_player';
       input.placeholder = 'Steve';
+      input.onchange = function() { updateImage(this); };
     break;
     case 'skin_url':
       input.type = 'minecraft_skin_url';
       input.placeholder = 'http://assets.mojang.com/SkinTemplates/steve.png';
+      input.onchange = function() { updateImage(this); };
     break;
     case 'skin_file':
       input.type = 'file';
       input.placeholder = null;
+      input.onchange = function() {
+        base64(this);
+        updateImage(this);
+      };
     break;
   }
 }
 
-  </script>
+async function urlFromInputs(div) {
+  const main = div.getElementsByTagName('label')[0].innerText;
+  const api = div.getElementsByTagName('select')[0].value;
+  const value = div.getElementsByTagName('input')[0].value;
+  // add more here later
+  console.log(main + api + '=' + value);
+  return main + api + '=' + value;
+}
 
-  </head>
-
-  <body onload="main()">
-  <h1>Skindentity</h1>
-  <p>For a better explanation on how to use the API, <a href='https://github.com/Sorrowfall/Skindentity/blob/main/README.md' target="_blank">click here</a>.</p>
-  <div id='container'></div>
-  <p>Check it out on <a href='https://github.com/Sorrowfall/Skindentity/' target="_blank">GitHub</a>.</p>
-  </body>
-
-</html>
+async function base64(element) {
+  var file = element.files[0];
+  var reader = new FileReader();
+  reader.onload = function() {
+    element.value = reader.result.replace(/^data:.+;base64,/, '');
+  }
+  reader.readAsDataURL(file);
+}
