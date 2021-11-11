@@ -39,18 +39,13 @@ This API is mainly meant for server owners or administrators who want to add fan
 
 |Value|Type|Description|Default|
 |-|-|-|-|
-|`player_name`|`str`|Which player's skin to use
-|`skin_url`|`str`|Link to get an image
-|`skin_base64`|`str`|Base64 encoded image
+|`player_name`|`str`|What player's skin to use|
+|`skin_url`|`str`|Link to get an image|
+|`skin_base64`|`str`|Base64 encoded image|
 |`slim`|`bool`|Whether or not to render skins with slim arms|`false`
-
-### Planned Arguments
-
-|Value|Type|Description|Default|
-|-|-|-|-|
 |`overlay`|`bool`|Whether or not to display the skin's overlay|`false`
-|`padding`|`int`|How many pixels around the image to make transparent (1 to 6) (set to 2 to fit inside circles)|0
-|`upscale`|`int`|What factor to upscale the image by (2 to 30)|0
+|`margin`|`int`|How many pixels around the image to make transparent. (1 to 8)|`0`
+|`upscale`|`int`|How many times to increase the size of a pixel. (2 to 8)|`1`
 
 ## How To Contribute
 
