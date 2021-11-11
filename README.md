@@ -22,7 +22,7 @@ This API is mainly meant for server owners or administrators who want to add fan
 
 ## Current APIs
 
-> #### For an interactive version of the API, [click here](https://sorrowfall.github.io/Skindentity).
+> #### For an interactive version of the API, [click here](https://skindentity.deta.dev/).
 
 ### skindentity.deta.dev/portrait/
 ![preview](previews/portrait.png)
