@@ -2,4 +2,3 @@ aiofiles
 fastapi
 Pillow
 uvicorn
-jinja2
