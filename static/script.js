@@ -29,9 +29,9 @@ function main() {
     button.innerText = "Copy";
     button.onclick = function() {navigator.clipboard.writeText(urlFromInputs(this.parentElement));};
     var img = document.createElement('img');
-    img.src = 'previews/' + render + '.png';
-    img.alt = 'previews/' + render + '.png';
-    img.onerror = async function() {this.src = 'previews/' + render + '.png'};
+    img.src = 'static/previews/' + render + '.png';
+    img.alt = 'static/previews/' + render + '.png';
+    img.onerror = async function() {this.src = 'static/previews/' + render + '.png'};
 
     text_div.appendChild(label);
     text_div.appendChild(select);
@@ -77,12 +77,11 @@ function switchInput(element) {
   }
 }
 
-async function urlFromInputs(div) {
+function urlFromInputs(div) {
   const main = div.getElementsByTagName('label')[0].innerText;
   const api = div.getElementsByTagName('select')[0].value;
   const value = div.getElementsByTagName('input')[0].value;
   // add more here later
-  console.log(main + api + '=' + value);
   return main + api + '=' + value;
 }
 
