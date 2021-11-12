@@ -81,19 +81,19 @@ def old_to_new_skin(skin: Image) -> Image:
     return final_image
 
 def side_from_skin(skin: Image, main_pos: tuple, overlay_pos: tuple, overlay: bool):
-    
+
     main = skin.crop(main_pos).convert("RGBA")
     main_p = Image.new('RGBA', (main.width+2, main.height+2), (0, 0, 0, 0))
     main_p.paste(main, (1, 1))
-    
+
     if overlay:
         overlay = skin.crop(overlay_pos).convert("RGBA")
-        main_p.paste(overlay, (2, 1), overlay)
+        main_p.paste(overlay, (1, 1), overlay)
         main_p.paste(overlay, (0, 1), overlay)
-    
+
     enhancer = ImageEnhance.Brightness(main_p)
     enhanced_im = enhancer.enhance(0.75)
-    
+
     return enhanced_im.resize(( int(main_p.width/2)+1, main_p.height ), Image.NEAREST)
 
 def face_from_skin(skin: Image, main_pos: tuple, overlay_pos: tuple, overlay: bool):
