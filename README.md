@@ -16,9 +16,9 @@
   </p>
 </h1>
 
-Python FastAPI with a collection of Minecraft Skin rendering APIs.
+**Skindentity** is a python library for rendering Minecraft skins. Works as a Rest API using the [FastAPI](https://fastapi.tiangolo.com/) library.
 
-This API is mainly meant for server owners or administrators who want to add fancier icons to their GUIs.
+Mainly meant for server admins who want to display their players outside of the game.
 
 ## Current APIs
 

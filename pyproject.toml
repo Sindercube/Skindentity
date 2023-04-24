@@ -1,0 +1,33 @@
+[project]
+name = "Skindentity"
+description = "Minecraft Skin rendering API."
+version = "3.0.0"
+authors = [
+    { name = "Stefan Nešić" }
+]
+requires-python = ">=3.6"
+license = {file = "LICENSE"}
+readme = "README.md"
+
+dependencies = [
+    "requests",
+    "aiofiles",
+    "fastapi",
+    "Pillow",
+    "uvicorn",
+    "jinja2"
+]
+
+[project.urls]
+repository = "https://gitlab.com/Sorrowfall/Skindentity"
+
+[build-system]
+requires = [
+    "requests",
+    "aiofiles",
+    "fastapi",
+    "Pillow",
+    "uvicorn",
+    "jinja2"
+]
+build-backend = "setuptools.build_meta"

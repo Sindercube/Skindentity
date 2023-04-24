@@ -1,5 +1,8 @@
 env/
+test.py
+.vscode/
 .deta/
 tmp/
 test.py/
 __pycache__/
+.space

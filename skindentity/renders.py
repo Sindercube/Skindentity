@@ -1,30 +1,55 @@
 from PIL import Image, ImageEnhance
 from skindentity import Skin
 
-class Renders:
-
-    def render(self, renderer: str):
-        return self.renders.get(renderer, 'skin')()
+class Renderer:
 
     def __init__(self, skin: Skin, overlay: bool):
-
-        self.renders = {
-            'skin':     self.skin,
-            'face':     self.face,
-            'portrait': self.portrait
-        }
-
         self.image = skin.image
         self.slim = skin.slim
         self.overlay = overlay
+    
+    def _render_side(self, main_pos: tuple, overlay_pos: tuple) -> Image:
+        if len(main_pos) == 2: main_pos += tuple(i+8 for i in main_pos)
+        if len(overlay_pos) == 2: overlay_pos += tuple(i+8 for i in overlay_pos)
 
-    def skin(self):
+        result = self.image.crop(main_pos).convert("RGBA")
+        part = Image.new('RGBA', (result.width+2, result.height+2), (0, 0, 0, 0))
+        part.paste(result, (1, 1))
+        
+        if self.overlay:
+            overlay = self.image.crop(overlay_pos).convert("RGBA")
+            part.paste(overlay, (2, 1), overlay)
+            part.paste(overlay, (0, 1), overlay)
+        
+        enhancer = ImageEnhance.Brightness(part)
+        enhanced_im = enhancer.enhance(0.75)
+
+        return enhanced_im.resize(( int(part.width/2)+1, part.height ), Image.NEAREST)
+
+    def _render_face(self, main_pos: tuple, overlay_pos: tuple) -> Image:
+        if len(main_pos) == 2: main_pos += tuple(i+8 for i in main_pos)
+        if len(overlay_pos) == 2: overlay_pos += tuple(i+8 for i in overlay_pos)
+
+        result = self.image.crop(main_pos).convert("RGBA")
+        if self.overlay:
+            overlay = self.image.crop(overlay_pos).convert("RGBA")
+            result = Image.alpha_composite(result, overlay)
+        return result
+
+class Skin(Renderer):
+
+    def render(self):
         return self.image
 
-    def face(self):
+class Face(Renderer):
+
+    def render(self):
         return self._render_face((8, 8), (40, 8))
 
-    def portrait(self):
+class Portrait(Renderer):
+
+    def render(self):
+
         final_image = Image.new('RGBA', (24, 24))
 
         head_front = self._render_face((8, 8), (40, 8))
@@ -66,31 +91,3 @@ class Renders:
         enhanced_im.paste(bar, (0, 23))
 
         return enhanced_im
-
-    def _render_side(self, main_pos: tuple, overlay_pos: tuple) -> Image:
-        if len(main_pos) == 2: main_pos += tuple(i+8 for i in main_pos)
-        if len(overlay_pos) == 2: overlay_pos += tuple(i+8 for i in overlay_pos)
-
-        result = self.image.crop(main_pos).convert("RGBA")
-        part = Image.new('RGBA', (result.width+2, result.height+2), (0, 0, 0, 0))
-        part.paste(result, (1, 1))
-        
-        if self.overlay:
-            overlay = self.image.crop(overlay_pos).convert("RGBA")
-            part.paste(overlay, (2, 1), overlay)
-            part.paste(overlay, (0, 1), overlay)
-        
-        enhancer = ImageEnhance.Brightness(part)
-        enhanced_im = enhancer.enhance(0.75)
-
-        return enhanced_im.resize(( int(part.width/2)+1, part.height ), Image.NEAREST)
-
-    def _render_face(self, main_pos: tuple, overlay_pos: tuple) -> Image:
-        if len(main_pos) == 2: main_pos += tuple(i+8 for i in main_pos)
-        if len(overlay_pos) == 2: overlay_pos += tuple(i+8 for i in overlay_pos)
-
-        result = self.image.crop(main_pos).convert("RGBA")
-        if self.overlay:
-            overlay = self.image.crop(overlay_pos).convert("RGBA")
-            result = Image.alpha_composite(result, overlay)
-        return result

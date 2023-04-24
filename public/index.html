@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta name="description" content="Python FastAPI with a collection of Minecraft Skin rendering APIs.">
+  <meta property="og:title" content="Skindentity">
+  <meta property="og:description" content="Python FastAPI with a collection of Minecraft Skin rendering APIs.">
+  <meta property="og:image" content="icon.png">
+
+  <link rel="stylesheet" href="public/style.css">
+  <link rel="stylesheet" href="https://sorrowfall.github.io/Minecraft-Bootstrap/style.css">
+  <script src="public/script.js"></script>
+
+  <title>Skindentity</title>
+  <link rel="icon" href="public/icon.png">
+</head>
+
+<body>
+
+    <header>
+        <h1><bold>Skindentity</bold></h1>
+        <p>Simple Minecraft skin rendering API</p>
+        <p>For a better explanation on how to use the API, check out the <a href='https://github.com/Sorrowfall/Skindentity/blob/main/README.md' rel='noopener' target="_blank">GitHub README</a>.</p>
+    </header>
+
+    <div class='container'>
+
+        <button onclick="navigator.clipboard.writeText(textFromElements(document.getElementById('text')))">Copy</button>
+
+        <div id="text" style="display: inline;">
+
+            <label>https://skindentity.sindercu.be</label>
+
+            <select id="renderSelector" onchange="updateImage(this)">
+                {% for render in renders %}
+                    <option value='{{ render }}'>{{ render }}</option>
+                {% endfor %}
+            </select>
+
+            <label>/</label>
+
+            <select id="optionSelector" onchange="switchInput(this); updateImage(this)">
+                {% for option in inputs %}
+                    <option value='{{ option }}'>{{ option }}</option>
+                {% endfor %}
+            </select>
+
+            <label>/</label>
+
+            <input id="input" onchange="updateImage(this)">
+
+        </div>
+
+        <template id="argumentTemplate">
+
+            <div class="templateContainer" style="display: inline;">
+
+                <label>?</label>
+
+                <select onchange="switchArgument(this); updateImage(this.parentElement)">
+                    {% for argument in arguments %}
+                        <option class="{{ argument }}" value='{{ argument }}'>{{ argument }}</option>
+                    {% endfor %}
+                </select>
+
+                <label>=</label>
+
+                <input id="optionInput" onchange="updateImage(this.parentElement)" type="checkbox">
+
+            </div>
+
+        </template>
+
+        <button onclick="addArgument(this)">
+            +
+        </button>
+
+        <p id="errorBox"></p>
+
+        <img>
+
+    </div>
+
+    <footer>
+        <p>Source code is available on <a href='https://github.com/Sindercube/Skindentity/' rel='noopener' target="_blank">GitHub</a></p>
+        <p>Not affiliated with Minecraft, Mojang or Microsoft</p>
+    </footer>
+
+</body>
+
+</html>
