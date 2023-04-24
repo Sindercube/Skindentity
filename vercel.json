@@ -2,14 +2,14 @@
     "devCommand": "uvicorn skindentity.main:app --host 0.0.0.0 --port 3000",
     "builds": [
         {
-        "src": "api/index.py",
+        "src": "skindentity/main.py",
         "use": "@vercel/python"
         }
     ],
     "routes": [
         {
         "src": "/(.*)",
-        "dest": "api/index.py"
+        "dest": "skindentity/main.py"
         }
     ]
 }
