@@ -136,10 +136,10 @@ function textFromElements(container) {
   url = ''
   for (const child of container.children) {
     if (child.tagName == 'LABEL') url += child.innerHTML
-    else if (child.placeholder) url += encodeURIComponent(child.placeholder)
     else if (child.type == 'checkbox') url += child.checked
     else if (child.tagName == 'DIV') url += textFromElements(child)
-    else url += child.value
+    else if (child.value) url += child.value
+    else if (child.placeholder) url += encodeURIComponent(child.placeholder)
   }
   return url.replace('&amp;', '&')
 }
