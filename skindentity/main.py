@@ -47,7 +47,7 @@ async def landing(request: Request):
     }
     return templates.TemplateResponse("index.html", kwargs)
 
-@app.get('/{render_type}/{input_type}/{input}')
+@app.get('/{render_type}/{input_type}/{input:path}')
 async def get(
     render_type: RenderTypes,
     input_type: InputTypes,
