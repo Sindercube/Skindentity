@@ -138,7 +138,7 @@ function textFromElements(container) {
     if (child.tagName == 'LABEL') url += child.innerHTML
     else if (child.type == 'checkbox') url += child.checked
     else if (child.tagName == 'DIV') url += textFromElements(child)
-    else if (child.value) url += child.value
+    else if (child.value) url += encodeURIComponent(child.value)
     else if (child.placeholder) url += encodeURIComponent(child.placeholder)
   }
   return url.replace('&amp;', '&')
